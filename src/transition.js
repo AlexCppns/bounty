@@ -23,7 +23,7 @@ export default ({
     }
     const t = Math.min(Math.max(timestamp - startTime - delay, 0), duration) / duration;
     value = easing(t) * (to - from) + from;
-    step(value);
+    step(value, t);
     if (t === 1) {
       finished = true;
       end(value);

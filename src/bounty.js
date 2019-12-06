@@ -1,6 +1,7 @@
 import loop from './loop';
 import { select, append, attr, style, text } from './selection';
 import transition from './transition';
+import {addFadeAttribute, calculateMotionValue } from "./utils";
 
 const DIGITS_COUNT = 10;
 const ROTATIONS = 3;
@@ -93,7 +94,9 @@ export default ({
   letterSpacing = 1,
   animationDelay = 100,
   letterAnimationDelay = 100,
-  duration = 3000
+  duration = 3000,
+  thousandSeparator = ',',
+  decimalSeparator = "."
 }) => {
   const element = select(el);
   const computedStyle = window.getComputedStyle(element);
@@ -130,7 +133,7 @@ export default ({
   const values = prepareValues(String(value), initialString);
   const initial = prepareValues(initialString, String(value));
 
-  const chars = values.map((char, i) => {
+  let chars = values.map((char, i) => {
     const id = `${i}-${salt}`;
     if (isNaN(parseInt(char, 10)) || isNaN(parseInt(initial[i], 10))) {
       return {
@@ -156,40 +159,62 @@ export default ({
   });
 
   const transitions = [];
+  chars = addFadeAttribute(chars, decimalSeparator, thousandSeparator);
   const digits = chars.filter(char => char.isDigit);
-  digits.forEach((digit, i) => {
-    const sourceDistance = digit.initial * (fontSize * lineHeight);
-    const targetDistance =
-      (ROTATIONS * DIGITS_COUNT + digit.value) * (fontSize * lineHeight);
-    const digitTransition = transition({
-      from: sourceDistance,
-      to: targetDistance,
-      duration: duration,
-      delay: (digits.length - 1 - i) * letterAnimationDelay + animationDelay,
-      step(value) {
-        digit.offset.y =
-          offset + (value % (fontSize * lineHeight * DIGITS_COUNT));
-        digit.node::attr(
-          'transform',
-          `translate(${digit.offset.x}, ${digit.offset.y})`
-        );
-        const filterOrigin = (sourceDistance + targetDistance) / 2;
-        const motionValue = Number(
-          Math.abs(
-            Math.abs(Math.abs(value - filterOrigin) - filterOrigin) -
-              sourceDistance
-          ) / 100
-        ).toFixed(1);
-        digit.filter::attr('stdDeviation', `0 ${motionValue}`);
-      },
-      end: i === 0 ? () => {
-        element.querySelectorAll('[style*="filter"]').forEach(ele => {
-          ele.style.filter = ''
-        });
-        cancelAnimation();
-      } : e => e
-    });
-    transitions.push(digitTransition);
+
+  chars.forEach((digit, i) => {
+    if(!digit.isDigit){
+      const digitTransition = transition({
+        from: 0,
+        to: 0,
+        duration: duration,
+        delay: (digits.length - 1 - i) * letterAnimationDelay + animationDelay,
+        step(value, t) {
+          if(digit.willFade){ digit.node::attr('opacity', 1 -  t); }
+        },
+        end: i === 0 ? () => {
+          element.querySelectorAll('[style*="filter"]').forEach(ele => {
+            ele.style.filter = ''
+          });
+          cancelAnimation();
+        } : e => e
+      });
+
+      transitions.push(digitTransition);
+
+    } else {
+      const sourceDistance = digit.initial * (fontSize * lineHeight);
+      const targetDistance =
+        (ROTATIONS * DIGITS_COUNT + digit.value) * (fontSize * lineHeight);
+      const digitTransition = transition({
+        from: sourceDistance,
+        to: targetDistance,
+        duration: duration,
+        delay: (digits.length - 1 - i) * letterAnimationDelay + animationDelay,
+        step(value, t) {
+          digit.offset.y =
+            offset + (value % (fontSize * lineHeight * DIGITS_COUNT));
+
+          digit.node::attr(
+            'transform',
+            `translate(${digit.offset.x}, ${digit.offset.y})`
+          );
+
+          if(digit.willFade){ digit.node::attr('opacity', 1 -  t); }
+
+          digit.filter::attr('stdDeviation', `0 ${
+            calculateMotionValue(sourceDistance, targetDistance, value
+          )}`);
+        },
+        end: i === 0 ? () => {
+          element.querySelectorAll('[style*="filter"]').forEach(ele => {
+            ele.style.filter = ''
+          });
+          cancelAnimation();
+        } : e => e
+      });
+      transitions.push(digitTransition);
+    }
   });
 
   const update = timestamp => {
@@ -221,6 +246,9 @@ export default ({
     setViewBox(root, canvasWidth, canvasHeight);
     transitions.forEach(transition => transition.update(timestamp));
   };
+
+
+
 
   const cancelAnimation = loop(update);
   return cancelAnimation;

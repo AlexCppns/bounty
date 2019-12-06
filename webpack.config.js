@@ -1,8 +1,10 @@
+const path = require('path');
+
 module.exports = {
   entry: './src/index.js',
   output: {
     filename: 'bounty.js',
-    path: './lib/',
+    path: path.resolve(__dirname, 'lib'),
     publicPath: '/',
     libraryTarget: 'umd',
     library: 'bounty'
@@ -12,7 +14,7 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel'
+        loader: 'babel-loader'
       }
     ]
   }

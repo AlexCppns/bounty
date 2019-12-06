@@ -8,6 +8,7 @@
   <meta name="author" content="Coderitual">
   <meta name="description" content="Canvas 2d odometer effect">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
   <style type="text/css">
     @font-face {
       font-family: 'ITV Reem';
@@ -21,7 +22,7 @@
 
     body {
       background-color: #999;
-      font-family: 'WH Hoxton';
+      font-family: 'Roboto', sans-serif;
       font-size: 82px;
       text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
       fill: #fff;
@@ -33,7 +34,7 @@
   <div class="js-bounty"></div>
   <script src="/bounty.js"></script>
   <script>
-    bounty.default({ el: '.js-bounty', value: '£144,167.60' })
+    bounty.default({ el: '.js-bounty', value: '0,01', initialValue: '900000,01', thousandSeparator: null, decimalSeparator: "," })
   </script>
 </body>
 
