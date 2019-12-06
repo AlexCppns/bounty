@@ -140,6 +140,8 @@ export default ({
   };
 
   const newTransition = (char, i) => {
+    console.log(char);
+    console.log(fadeNumbers);
     const height = fontSize * lineHeight;
     const from = char.isDigit ? char.initial * height : 0;
     const to = char.isDigit ? (ROTATIONS * DIGITS_COUNT + char.value) * height : 0;
