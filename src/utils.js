@@ -35,7 +35,7 @@ export function addFadeAttribute(chars, decimalSeparator, thousandSeparator) {
   });
 }
 
-export function calculateMotionValue(sourceDistance, targetDistance, value) {
+export function calcMotionValue(sourceDistance, targetDistance, value) {
   const filterOrigin = (sourceDistance + targetDistance) / 2;
   return Number(
     Math.abs(
